@@ -6,12 +6,12 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import settings
-from backend.db.mongodb import mongo_repository
-from backend.models.model_loader import ModelRegistry
-from backend.routes.health import router as health_router
-from backend.routes.images import router as images_router
-from backend.routes.prediction import router as prediction_router
+from config import settings
+from db.mongodb import mongo_repository
+from models.model_loader import ModelRegistry
+from routes.health import router as health_router
+from routes.images import router as images_router
+from routes.prediction import router as prediction_router
 
 
 logging.basicConfig(
