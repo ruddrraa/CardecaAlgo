@@ -2,7 +2,11 @@ import axios from 'axios';
 import { useUploadStore } from '../store/useUploadStore';
 
 const MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://127.0.0.1:8000';
+const BACKEND_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  'http://127.0.0.1:8000'
+).replace(/\/$/, '');
 
 export const uploadImage = async (fileId: string, file: File) => {
   const store = useUploadStore.getState();
