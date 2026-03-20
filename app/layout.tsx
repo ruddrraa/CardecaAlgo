@@ -21,7 +21,10 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: "CarDeCa AlgoritHM",
-  description: "Made By ",
+  description: "Maximize your vehicle detection and classification with our cutting-edge algorithm. Upload images to automatically identify vehicles, classify their types, and retrieve precise bounding box coordinates. Experience unparalleled accuracy and efficiency in vehicle analysis with our state-of-the-art solution.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
