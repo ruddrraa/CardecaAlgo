@@ -5,8 +5,8 @@ from typing import Any
 from bson import Binary, ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from backend.config import settings
-from backend.schemas.prediction import PredictResponse
+from config import settings
+from schemas.prediction import PredictResponse
 
 logger = logging.getLogger(__name__)
 
