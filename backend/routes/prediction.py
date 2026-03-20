@@ -4,10 +4,10 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 
-from backend.config import settings
-from backend.db.mongodb import MongoRepository, mongo_repository
-from backend.schemas.prediction import PredictResponse
-from backend.services.inference_service import (
+from config import settings
+from db.mongodb import MongoRepository, mongo_repository
+from schemas.prediction import PredictResponse
+from services.inference_service import (
     InferenceError,
     InferenceService,
     InvalidImageError,
