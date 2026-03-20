@@ -9,7 +9,7 @@ import torch.nn as nn
 from torchvision import models, transforms
 from ultralytics import RTDETR
 
-from backend.config import settings
+from config import settings
 
 logger = logging.getLogger(__name__)
 
