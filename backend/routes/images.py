@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 
-from backend.db.mongodb import MongoRepository, mongo_repository
+from db.mongodb import MongoRepository, mongo_repository
 
 router = APIRouter(prefix="", tags=["images"])
 
