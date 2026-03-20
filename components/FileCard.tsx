@@ -13,15 +13,28 @@ export function FileCard({ file }: { file: UploadedFile }) {
   const buildAnnotatedCanvas = async (): Promise<HTMLCanvasElement | null> => {
     if (!file.results || file.results.length === 0) return null;
 
-    const sourceUrl = file.resultImageUrl || file.previewUrl;
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
+    const tryLoadImage = async (src: string, useCors = false): Promise<HTMLImageElement> => {
+      const image = new Image();
+      if (useCors) {
+        image.crossOrigin = 'anonymous';
+      }
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error(`Unable to load image: ${src}`));
+        image.src = src;
+      });
+      return image;
+    };
 
-    await new Promise<void>((resolve, reject) => {
-      image.onload = () => resolve();
-      image.onerror = () => reject(new Error('Unable to load image for annotation'));
-      image.src = sourceUrl;
-    });
+    let image: HTMLImageElement;
+    try {
+      image = await tryLoadImage(file.previewUrl);
+    } catch {
+      if (!file.resultImageUrl) {
+        throw new Error('No available image source for annotation');
+      }
+      image = await tryLoadImage(file.resultImageUrl, true);
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth;
@@ -60,22 +73,28 @@ export function FileCard({ file }: { file: UploadedFile }) {
   };
 
   const handleDownloadAnnotatedImage = async () => {
-    const canvas = await buildAnnotatedCanvas();
-    if (!canvas) return;
+    try {
+      const canvas = await buildAnnotatedCanvas();
+      if (!canvas) return;
 
-    const downloadLink = document.createElement('a');
-    downloadLink.href = canvas.toDataURL('image/png');
-    downloadLink.download = `${file.file.name.replace(/\.[^/.]+$/, '')}_annotated.png`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    downloadLink.remove();
+      const downloadLink = document.createElement('a');
+      downloadLink.href = canvas.toDataURL('image/png');
+      downloadLink.download = `${file.file.name.replace(/\.[^/.]+$/, '')}_annotated.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+    } catch (error) {
+      console.error('Failed to generate annotated image', error);
+      alert('Annotated image generate nahi ho pa rahi. Backend image expired ya unavailable ho sakti hai.');
+    }
   };
 
   const handleDownloadResultPdf = async () => {
     if (!file.results || file.results.length === 0) return;
 
-    const canvas = await buildAnnotatedCanvas();
-    if (!canvas) return;
+    try {
+      const canvas = await buildAnnotatedCanvas();
+      if (!canvas) return;
 
     const jspdfModule = await import('jspdf/dist/jspdf.umd.min.js');
     const { jsPDF } = jspdfModule;
@@ -233,7 +252,11 @@ export function FileCard({ file }: { file: UploadedFile }) {
 
     pdf.addImage(imgData, 'PNG', margin, cursorY, targetWidth, targetHeight, undefined, 'FAST');
 
-    pdf.save(`${file.file.name.replace(/\.[^/.]+$/, '')}_result.pdf`);
+      pdf.save(`${file.file.name.replace(/\.[^/.]+$/, '')}_result.pdf`);
+    } catch (error) {
+      console.error('Failed to generate result PDF', error);
+      alert('PDF generate nahi ho paa raha. Image source unavailable ho sakta hai.');
+    }
   };
 
   const getStatusIcon = () => {
