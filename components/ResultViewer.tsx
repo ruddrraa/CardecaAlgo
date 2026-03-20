@@ -12,7 +12,8 @@ export function ResultViewer({ file }: { file: UploadedFile }) {
   const [showBoxes, setShowBoxes] = useState(true);
 
   useEffect(() => {
-    setImageSrc(file.resultImageUrl || file.previewUrl);
+    setNaturalSize({ width: 0, height: 0 });
+    setImageSrc(file.previewUrl || file.resultImageUrl || '');
   }, [file.previewUrl, file.resultImageUrl]);
 
   useEffect(() => {
@@ -78,6 +79,19 @@ export function ResultViewer({ file }: { file: UploadedFile }) {
               width: imageRef.current.naturalWidth,
               height: imageRef.current.naturalHeight,
             });
+          }}
+          onError={() => {
+            // Switch to alternate source if current image fails.
+            if (imageSrc === file.previewUrl && file.resultImageUrl && file.resultImageUrl !== file.previewUrl) {
+              setNaturalSize({ width: 0, height: 0 });
+              setImageSrc(file.resultImageUrl);
+              return;
+            }
+
+            if (imageSrc === file.resultImageUrl && file.previewUrl && file.previewUrl !== file.resultImageUrl) {
+              setNaturalSize({ width: 0, height: 0 });
+              setImageSrc(file.previewUrl);
+            }
           }}
         />
 
