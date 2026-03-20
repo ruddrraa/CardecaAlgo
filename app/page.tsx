@@ -14,12 +14,10 @@ export default function Home() {
       {/* Header */}
       <header className="bg-[#ffffff] border-b border-slate-200 sticky top-0 z-10 backdrop-blur-md ">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-2 rounded-lg text-white shadow-sm shadow-blue-200">
-              <Cannabis className="w-5 h-5" />
-            </div>
-            <h1 className="text-xl font-serif font-bold text-[25px] tracking-tight text-slate-800">
-  Cardeca <span className="text-[#7e7e7e] text-[17px] font-serif">AlgoritHM</span>
+          <div className="flex items-center gap-2 absolute left-[43%]" >
+            
+            <h1 className="text-xl font-serif font-bold text-[35px] tracking-tight text-black">
+  Cardeca <span className="text-[#7e7e7e] text-[24px] font-serif tracking-normal">AlgoritHM</span>
 </h1>
           </div>
           
@@ -38,7 +36,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-6 mt-12">
         <div className="space-y-4 mb-10 text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-black">
+          <h2 className="text-3xl font-sans font-bold tracking-tight sm:text-4xl text-black ">
             Vehicle Detection & Classification
           </h2>
           <p className="text-[#7e7e7e] max-w-xl mx-auto text-lg leading-relaxed font-medium">
