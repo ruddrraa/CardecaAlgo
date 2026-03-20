@@ -4,8 +4,8 @@ import logging
 import torch
 from PIL import Image, UnidentifiedImageError
 
-from backend.models.model_loader import ModelRegistry
-from backend.schemas.prediction import BoundingBox, PredictResponse
+from models.model_loader import ModelRegistry
+from schemas.prediction import BoundingBox, PredictResponse
 
 logger = logging.getLogger(__name__)
 
