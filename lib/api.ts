@@ -8,6 +8,28 @@ const BACKEND_URL = (
   'http://127.0.0.1:8000'
 ).replace(/\/$/, '');
 
+const normalizeImageUrl = (rawImageUrl: string) => {
+  try {
+    const parsed = new URL(rawImageUrl, BACKEND_URL);
+    const isLoopbackHost = ['127.0.0.1', '0.0.0.0', 'localhost'].includes(parsed.hostname);
+
+    if (isLoopbackHost) {
+      const backend = new URL(BACKEND_URL);
+      parsed.protocol = backend.protocol;
+      parsed.host = backend.host;
+    }
+
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && parsed.protocol === 'http:') {
+      parsed.protocol = 'https:';
+    }
+
+    return parsed.toString();
+  } catch {
+    const normalizedPath = rawImageUrl.startsWith('/') ? rawImageUrl : `/${rawImageUrl}`;
+    return `${BACKEND_URL}${normalizedPath}`;
+  }
+};
+
 export const uploadImage = async (fileId: string, file: File) => {
   const store = useUploadStore.getState();
   
@@ -44,7 +66,7 @@ export const uploadImage = async (fileId: string, file: File) => {
     const prediction = res.data;
     store.updateFileProgress(fileId, 100);
     if (prediction.image_url) {
-      store.setResultImageUrl(fileId, prediction.image_url);
+      store.setResultImageUrl(fileId, normalizeImageUrl(prediction.image_url));
     }
     store.setResults(fileId, [
       {
