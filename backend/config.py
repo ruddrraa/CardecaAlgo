@@ -16,8 +16,10 @@ class Settings(BaseSettings):
     mongo_uri: str = Field(default="mongodb://localhost:27017")
     mongo_db_name: str = Field(default="vehicle_ai")
     mongo_collection_name: str = Field(default="predictions")
+    mongo_image_collection_name: str = Field(default="prediction_images")
 
     max_upload_size_bytes: int = Field(default=5 * 1024 * 1024)
+    image_retention_hours: int = Field(default=24)
 
     detector_weights_path: Path = Field(default=BASE_DIR / "rtdetr_weights.pt")
     classifier_weights_path: Path = Field(default=BASE_DIR / "car_model_weights.pth")

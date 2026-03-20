@@ -39,6 +39,9 @@ export const uploadImage = async (fileId: string, file: File) => {
 
     const prediction = res.data;
     store.updateFileProgress(fileId, 100);
+    if (prediction.image_url) {
+      store.setResultImageUrl(fileId, prediction.image_url);
+    }
     store.setResults(fileId, [
       {
         box: {

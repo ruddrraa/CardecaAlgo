@@ -16,6 +16,7 @@ export interface UploadedFile {
   status: JobStatus;
   jobId?: string;
   results?: DetectionResult[];
+  resultImageUrl?: string;
 }
 
 export interface UploadStore {
@@ -24,6 +25,7 @@ export interface UploadStore {
   updateFileProgress: (id: string, progress: number) => void;
   updateFileStatus: (id: string, status: JobStatus, jobId?: string) => void;
   setResults: (id: string, results: DetectionResult[]) => void;
+  setResultImageUrl: (id: string, imageUrl: string) => void;
   removeFile: (id: string) => void;
   reorderFiles: (files: UploadedFile[]) => void;
   clearFiles: () => void;
@@ -49,6 +51,9 @@ export const useUploadStore = create<UploadStore>((set) => ({
   })),
   setResults: (id, results) => set((state) => ({
     files: state.files.map(f => f.id === id ? { ...f, results, status: 'Done' as JobStatus } : f)
+  })),
+  setResultImageUrl: (id, imageUrl) => set((state) => ({
+    files: state.files.map(f => f.id === id ? { ...f, resultImageUrl: imageUrl } : f)
   })),
   removeFile: (id) => set((state) => {
     const file = state.files.find(f => f.id === id);

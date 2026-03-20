@@ -2,48 +2,48 @@
 
 import { UploadedFile } from '@/store/useUploadStore';
 import { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Image, Rect, Text, Group } from 'react-konva';
 
 export function ResultViewer({ file }: { file: UploadedFile }) {
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0, scale: 1 });
   const [showBoxes, setShowBoxes] = useState(true);
 
   useEffect(() => {
-    const img = new window.Image();
-    img.src = file.previewUrl;
-    img.onload = () => {
-      setImage(img);
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        const scale = containerWidth / img.width;
-        setDimensions({
-          width: containerWidth,
-          height: img.height * scale
-        });
-      }
-    };
-  }, [file.previewUrl]);
+    setImageSrc(file.resultImageUrl || file.previewUrl);
+  }, [file.previewUrl, file.resultImageUrl]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current && image) {
-        const containerWidth = containerRef.current.offsetWidth;
-        const scale = containerWidth / image.width;
-        setDimensions({
-          width: containerWidth,
-          height: image.height * scale
-        });
+    const updateDimensions = () => {
+      if (!containerRef.current || !naturalSize.width || !naturalSize.height) {
+        return;
       }
+      const containerWidth = containerRef.current.clientWidth;
+      const scale = containerWidth / naturalSize.width;
+      setDimensions({
+        width: containerWidth,
+        height: naturalSize.height * scale,
+        scale,
+      });
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [image]);
 
-  if (!image) return <div className="animate-pulse h-64 bg-slate-200 rounded-lg" />;
+    updateDimensions();
 
-  const scale = dimensions.width / image.width;
+    const observer = new ResizeObserver(() => updateDimensions());
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    window.addEventListener('resize', updateDimensions);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, [naturalSize]);
+
+  if (!imageSrc) return <div className="animate-pulse h-64 bg-slate-200 rounded-lg" />;
 
   return (
     <div className="flex flex-col gap-4">
@@ -62,50 +62,47 @@ export function ResultViewer({ file }: { file: UploadedFile }) {
         </div>
       </div>
 
-      <div ref={containerRef} className="relative rounded-lg overflow-hidden border border-slate-200 shadow-inner bg-slate-100/50 flex justify-center w-full">
-        {dimensions.width > 0 && (
-          <Stage width={dimensions.width} height={dimensions.height} className="max-w-full">
-            <Layer>
-              <Image
-                image={image}
-                width={dimensions.width}
-                height={dimensions.height}
-                alt="Original file"
+      <div
+        ref={containerRef}
+        className="relative rounded-lg overflow-hidden border border-slate-200 shadow-inner bg-slate-100/50 w-full"
+        style={{ minHeight: '240px' }}
+      >
+        <img
+          ref={imageRef}
+          src={imageSrc}
+          alt="Detected vehicle"
+          className="w-full h-auto block"
+          onLoad={() => {
+            if (!imageRef.current) return;
+            setNaturalSize({
+              width: imageRef.current.naturalWidth,
+              height: imageRef.current.naturalHeight,
+            });
+          }}
+        />
+
+        {showBoxes && dimensions.width > 0 && file.results?.map((res, i) => {
+          const x = Math.max(0, Math.min(res.box.x * dimensions.scale, dimensions.width - 1));
+          const y = Math.max(0, Math.min(res.box.y * dimensions.scale, dimensions.height - 1));
+          const width = Math.max(1, Math.min(res.box.width * dimensions.scale, dimensions.width - x));
+          const height = Math.max(1, Math.min(res.box.height * dimensions.scale, dimensions.height - y));
+          const labelY = Math.max(0, y - 24);
+
+          return (
+            <div key={i} className="absolute inset-0 pointer-events-none">
+              <div
+                className="absolute border-2 border-blue-500 rounded"
+                style={{ left: x, top: y, width, height }}
               />
-              
-              {showBoxes && file.results?.map((res, i) => (
-                <Group key={i}>
-                  <Rect
-                    x={res.box.x * scale}
-                    y={res.box.y * scale}
-                    width={res.box.width * scale}
-                    height={res.box.height * scale}
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    cornerRadius={4}
-                  />
-                  <Rect
-                    x={res.box.x * scale}
-                    y={(res.box.y * scale) - 24}
-                    width={res.box.width * scale}
-                    height={24}
-                    fill="#3b82f6"
-                    cornerRadius={[4, 4, 0, 0]}
-                  />
-                  <Text
-                    text={`${res.label} ${(res.confidence * 100).toFixed(1)}%`}
-                    x={(res.box.x * scale) + 6}
-                    y={(res.box.y * scale) - 18}
-                    fill="white"
-                    fontSize={12}
-                    fontFamily="Inter, sans-serif"
-                    fontStyle="bold"
-                  />
-                </Group>
-              ))}
-            </Layer>
-          </Stage>
-        )}
+              <div
+                className="absolute bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-t"
+                style={{ left: x, top: labelY }}
+              >
+                {res.label} {(res.confidence * 100).toFixed(1)}%
+              </div>
+            </div>
+          );
+        })}
       </div>
       
       {/* Legend / Detailed List */}

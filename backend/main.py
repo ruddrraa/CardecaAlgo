@@ -10,6 +10,7 @@ from backend.config import settings
 from backend.db.mongodb import mongo_repository
 from backend.models.model_loader import ModelRegistry
 from backend.routes.health import router as health_router
+from backend.routes.images import router as images_router
 from backend.routes.prediction import router as prediction_router
 
 
@@ -61,4 +62,5 @@ async def request_context_middleware(request: Request, call_next):
 
 
 app.include_router(health_router)
+app.include_router(images_router)
 app.include_router(prediction_router)

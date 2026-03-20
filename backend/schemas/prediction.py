@@ -15,6 +15,9 @@ class PredictResponse(BaseModel):
     car_model: str
     confidence: float = Field(..., ge=0.0, le=1.0)
     bounding_box: BoundingBox
+    image_id: str | None = None
+    image_url: str | None = None
+    image_expires_at: datetime | None = None
 
 
 class PredictionDocument(BaseModel):

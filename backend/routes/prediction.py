@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
@@ -49,6 +50,19 @@ async def predict(
 
     try:
         prediction = service.run(image_bytes)
+
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=settings.image_retention_hours)
+        image_id = await repository.save_image(
+            filename=file.filename or "unknown",
+            content_type=file.content_type,
+            image_bytes=image_bytes,
+            expires_at=expires_at,
+        )
+
+        prediction.image_id = image_id
+        prediction.image_url = str(request.base_url).rstrip("/") + f"/images/{image_id}"
+        prediction.image_expires_at = expires_at
+
         await repository.save_prediction(file.filename or "unknown", prediction)
         logger.info("[%s] Prediction complete for file=%s", request_id, file.filename)
         return prediction
